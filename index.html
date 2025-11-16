@@ -181,22 +181,21 @@ function closeCurtain() {
 }
 
     // Wheel scroll
-   document.addEventListener('wheel', (e) => {
+  document.addEventListener('wheel', (e) => {
   const now = Date.now();
   if (now - lastScrollTime < SCROLL_COOLDOWN) {
-
     return;
   }
 
-  if (window.scrollY === 0 && e.deltaY < 0) {
+  // Only close if scrollY is 0 AND user scrolls UP
+  if (window.scrollY <= 0 && e.deltaY < 0) {
     closeCurtain();
-
-  } else if (e.deltaY > 0) {
+    e.preventDefault(); // Prevent further scroll
+  } else if (e.deltaY > 0 && !isOpen) {
     openCurtain();
-   
   }
   lastScrollTime = now;
-}, { passive: false }); // Change passive to false
+}, { passive: false });
 
 
     // Touch detection
@@ -206,20 +205,21 @@ function closeCurtain() {
       touchStart = e.touches[0].clientY;
     }, { passive: true });
 
-    document.addEventListener('touchmove', (e) => {
-      if (!touchStart) return;
-      const touchEnd = e.touches[0].clientY;
-      const diff = touchStart - touchEnd;
+ document.addEventListener('touchmove', (e) => {
+  if (!touchStart) return;
+  const touchEnd = e.touches[0].clientY;
+  const diff = touchStart - touchEnd;
 
-      if (Math.abs(diff) > 50) {
-        if (window.scrollY === 0 && diff < 0) {
-          closeCurtain();
-        } else if (diff > 0) {
-          openCurtain();
-        }
-        touchStart = 0;
-      }
-    }, { passive: true });
+  if (Math.abs(diff) > 50) {
+    // Only close if at very top AND swiping up
+    if (window.scrollY <= 0 && diff < 0) {
+      closeCurtain();
+    } else if (diff > 0 && !isOpen) {
+      openCurtain();
+    }
+    touchStart = 0;
+  }
+}, { passive: true });
   </script>
 </body>
 </html>
