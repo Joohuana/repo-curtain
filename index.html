@@ -5,11 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>elementewerk - Cargo</title>
   <style>
-    body {
-      overflow-x: hidden;
-      margin: 0;
-      font-family: sans-serif;
-    }
+   
 
     /* Overlay styling */
     .overlay-top,
@@ -24,28 +20,13 @@
       clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
     }
 
-    .overlay-top {
-      top: 0;
-    }
+    .overlay-top { top: 0; }
+    .overlay-bottom { top: 50vh; }
 
-    .overlay-bottom {
-      top: 50vh;
-    }
+    .overlay-top.open { clip-path: polygon(0 0, 100% 0, 100% 0, 0 0); }
+    .overlay-bottom.open { clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%); }
 
-    .overlay-top.open {
-      clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
-    }
-
-    .overlay-bottom.open {
-      clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
-    }
-
-    /* Spacer sections */
-    .spacer-section {
-      height: 100vh;
-      background-color: transparent;
-    }
-
+   
     /* Custom cursor */
     .custom-cursor {
       position: fixed;
@@ -68,21 +49,11 @@
       transition: opacity 0.3s ease;
     }
 
-    .custom-cursor.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    body {
-      cursor: none;
-    }
+    .custom-cursor.hidden { opacity: 0; pointer-events: none; }
+    body { cursor: none; }
 
     @media (max-width: 768px) {
-      .custom-cursor {
-        width: 70px;
-        height: 70px;
-        font-size: 0.6rem;
-      }
+      .custom-cursor { width: 70px; height: 70px; font-size: 0.6rem; }
     }
   </style>
 </head>
@@ -90,42 +61,27 @@
   <div class="overlay-top"></div>
   <div class="overlay-bottom"></div>
 
-  <!-- First 100vh overlay spacer -->
-  <div class="spacer-section"></div>
-
-  <!-- Second 100vh transparent spacer -->
-  <div class="spacer-section"></div>
+ 
 
   <div class="custom-cursor">Scroll to reveal</div>
 
   <script>
     const overlayTop = document.querySelector('.overlay-top');
     const overlayBottom = document.querySelector('.overlay-bottom');
-    const spacerSections = document.querySelectorAll('.spacer-section');
     const customCursor = document.querySelector('.custom-cursor');
 
     let isOpen = false;
-    let lastScrollTime = 0;
-    const SCROLL_COOLDOWN = 300;
 
     // Detect device type
-    const isTouchDevice = () => {
-      return (
-        ('ontouchstart' in window) ||
-        navigator.maxTouchPoints > 0 ||
-        navigator.msMaxTouchPoints > 0
-      );
-    };
-    const isTouch = isTouchDevice();
+    const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
     customCursor.textContent = isTouch ? 'swipe to start' : 'scroll to start';
 
     // Custom cursor tracking
     if (!isTouch) {
-      document.addEventListener('mousemove', (e) => {
+      document.addEventListener('mousemove', e => {
         customCursor.style.left = (e.clientX - 40) + 'px';
         customCursor.style.top = (e.clientY - 40) + 'px';
       });
-
       document.addEventListener('mouseenter', () => customCursor.classList.remove('hidden'));
       document.addEventListener('mouseleave', () => customCursor.classList.add('hidden'));
     } else {
@@ -139,55 +95,18 @@
       isOpen = true;
     }
 
-    function closeCurtain() {
-      if (!isOpen) return;
-      overlayTop.classList.remove('open');
-      overlayBottom.classList.remove('open');
-      isOpen = false;
-    }
-
-    // Check if the **last spacer section** is 99% out of viewport
-    function isLastSpacerOutOfViewport() {
-      const rect = spacerSections[spacerSections.length - 1].getBoundingClientRect();
-      const spacerHeight = rect.height;
-      const outOfViewportAmount = Math.max(0, -rect.top);
-      const percentageOut = (outOfViewportAmount / spacerHeight) * 100;
-      return percentageOut >= 99;
-    }
-
-    // Wheel scroll
-    document.addEventListener('wheel', (e) => {
-      const now = Date.now();
-      if (now - lastScrollTime < SCROLL_COOLDOWN) return;
-
-      if (window.scrollY === 0 && e.deltaY < 0) {
-        closeCurtain();
-      } else if (e.deltaY > 0) {
-        openCurtain();
-      } else if (e.deltaY < 0 && isLastSpacerOutOfViewport()) {
-        closeCurtain();
-      }
-      lastScrollTime = now;
+    // Open curtain on scroll down only
+    document.addEventListener('wheel', e => {
+      if (e.deltaY > 0) openCurtain();
     }, { passive: true });
 
-    // Touch detection
+    // Open curtain on touch swipe up
     let touchStart = 0;
-    document.addEventListener('touchstart', (e) => { touchStart = e.touches[0].clientY; }, { passive: true });
-    document.addEventListener('touchmove', (e) => {
-      if (!touchStart) return;
+    document.addEventListener('touchstart', e => { touchStart = e.touches[0].clientY; }, { passive: true });
+    document.addEventListener('touchmove', e => {
       const touchEnd = e.touches[0].clientY;
       const diff = touchStart - touchEnd;
-
-      if (Math.abs(diff) > 50) {
-        if (window.scrollY === 0 && diff < 0) {
-          closeCurtain();
-        } else if (diff > 0) {
-          openCurtain();
-        } else if (diff < 0 && isLastSpacerOutOfViewport()) {
-          closeCurtain();
-        }
-        touchStart = 0;
-      }
+      if (diff > 50) openCurtain(); // swipe up
     }, { passive: true });
   </script>
 </body>
