@@ -167,7 +167,7 @@ function openCurtain() {
   overlayTop.classList.add('open');
   overlayBottom.classList.add('open');
   isOpen = true;
-  document.body.style.overflow = 'hidden';
+ 
   document.querySelector('.custom-cursor').style.pointerEvents = 'none'; // Allow events to pass
 }
 
@@ -193,7 +193,7 @@ function closeCurtain() {
     e.preventDefault();
   } else if (e.deltaY > 0) {
     openCurtain();
-    e.preventDefault();
+   
   }
   lastScrollTime = now;
 }, { passive: false }); // Change passive to false
