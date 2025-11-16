@@ -30,16 +30,17 @@ height: calc(50vh + 2px);
     /* Custom cursor */
     .custom-cursor {
       position: fixed;
-      width: 80px;
-      height: 80px;
-      border: 2px solid rgba(255, 255, 255, 0.8);
+      width: 120px;
+      height: 120px;
+      border: 1px solid rgba(255, 255, 255, 0.8);
       border-radius: 50%;
       pointer-events: none;
       z-index: 10000;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.65rem;
+      font-family: inherit;
+      font-size: 0.95rem;
       font-weight: 600;
       text-align: center;
       color: rgba(255, 255, 255, 0.8);
@@ -47,7 +48,8 @@ height: calc(50vh + 2px);
       box-sizing: border-box;
       line-height: 1.2;
       transition: opacity 0.3s ease;
-    }
+       letter-spacing: 0.1em;
+         }
 
     .custom-cursor.hidden { opacity: 0; pointer-events: none; }
     body { cursor: none; }
@@ -74,7 +76,7 @@ let isOpen = false;
 
 // Detect device type
 const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-customCursor.textContent = isTouch ? 'swipe to start' : 'scroll to start';
+customCursor.textContent = isTouch ? 'swipe to reveal' : 'scroll to reveal';
 
 // Custom cursor tracking
 if (!isTouch) {
