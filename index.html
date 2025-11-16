@@ -167,8 +167,14 @@ function openCurtain() {
   overlayTop.classList.add('open');
   overlayBottom.classList.add('open');
   isOpen = true;
- 
-  document.querySelector('.custom-cursor').style.pointerEvents = 'none'; // Allow events to pass
+  document.body.style.overflow = 'hidden'; // Block scroll while opening
+  
+  // Allow scroll after animation completes (0.8s = animation duration)
+  setTimeout(() => {
+    document.body.style.overflow = 'auto';
+  }, 800);
+  
+  document.querySelector('.custom-cursor').style.pointerEvents = 'none';
 }
 
 function closeCurtain() {
@@ -176,10 +182,15 @@ function closeCurtain() {
   overlayTop.classList.remove('open');
   overlayBottom.classList.remove('open');
   isOpen = false;
-  document.body.style.overflow = 'auto';
+  document.body.style.overflow = 'hidden'; // Block scroll while closing
+  
+  // Allow scroll after animation completes
+  setTimeout(() => {
+    document.body.style.overflow = 'auto';
+  }, 800);
+  
   document.querySelector('.custom-cursor').style.pointerEvents = 'auto';
 }
-
     // Wheel scroll
   document.addEventListener('wheel', (e) => {
   const now = Date.now();
@@ -190,7 +201,6 @@ function closeCurtain() {
   // Only close if scrollY is 0 AND user scrolls UP
   if (window.scrollY <= 0 && e.deltaY < 0) {
     closeCurtain();
-    e.preventDefault(); // Prevent further scroll
   } else if (e.deltaY > 0 && !isOpen) {
     openCurtain();
   }
