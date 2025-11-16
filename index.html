@@ -12,7 +12,7 @@
     .overlay-bottom {
       position: fixed;
       width: 100%;
-      height: 50vh;
+height: calc(50vh + 2px);
       background-color: #B9B9B9;
       z-index: 999;
       transform-origin: center;
@@ -66,48 +66,83 @@
   <div class="custom-cursor">Scroll to reveal</div>
 
   <script>
-    const overlayTop = document.querySelector('.overlay-top');
-    const overlayBottom = document.querySelector('.overlay-bottom');
-    const customCursor = document.querySelector('.custom-cursor');
+    <script>
+const overlayTop = document.querySelector('.overlay-top');
+const overlayBottom = document.querySelector('.overlay-bottom');
+const customCursor = document.querySelector('.custom-cursor');
 
-    let isOpen = false;
+let isOpen = false;
 
-    // Detect device type
-    const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-    customCursor.textContent = isTouch ? 'swipe to start' : 'scroll to start';
+// Detect device type
+const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+customCursor.textContent = isTouch ? 'swipe to start' : 'scroll to start';
 
-    // Custom cursor tracking
-    if (!isTouch) {
-      document.addEventListener('mousemove', e => {
-        customCursor.style.left = (e.clientX - 40) + 'px';
-        customCursor.style.top = (e.clientY - 40) + 'px';
-      });
-      document.addEventListener('mouseenter', () => customCursor.classList.remove('hidden'));
-      document.addEventListener('mouseleave', () => customCursor.classList.add('hidden'));
-    } else {
-      customCursor.classList.add('hidden');
+// Custom cursor tracking
+if (!isTouch) {
+  document.addEventListener('mousemove', e => {
+    customCursor.style.left = (e.clientX - 40) + 'px';
+    customCursor.style.top = (e.clientY - 40) + 'px';
+  });
+  document.addEventListener('mouseenter', () => customCursor.classList.remove('hidden'));
+  document.addEventListener('mouseleave', () => customCursor.classList.add('hidden'));
+} else {
+  customCursor.classList.add('hidden');
+}
+
+// Prevent scrolling while curtain is opening
+function preventScroll(e) {
+  e.preventDefault();
+}
+
+// Initially block scroll
+document.addEventListener('wheel', preventScroll, { passive: false });
+document.addEventListener('touchmove', preventScroll, { passive: false });
+
+// Disable scrolling via CSS as backup
+document.body.style.overflow = 'hidden';
+
+function openCurtain() {
+  if (isOpen) return;
+  isOpen = true;
+
+  overlayTop.classList.add('open');
+  overlayBottom.classList.add('open');
+
+  // Wait until both transitions finish
+  let transitionsFinished = 0;
+  function onTransitionEnd() {
+    transitionsFinished++;
+    if (transitionsFinished === 2) {
+      // Remove scroll lock
+      document.removeEventListener('wheel', preventScroll);
+      document.removeEventListener('touchmove', preventScroll);
+      document.body.style.overflow = ''; // re-enable normal scrolling
+
+      overlayTop.removeEventListener('transitionend', onTransitionEnd);
+      overlayBottom.removeEventListener('transitionend', onTransitionEnd);
     }
+  }
+  overlayTop.addEventListener('transitionend', onTransitionEnd);
+  overlayBottom.addEventListener('transitionend', onTransitionEnd);
+}
 
-    function openCurtain() {
-      if (isOpen) return;
-      overlayTop.classList.add('open');
-      overlayBottom.classList.add('open');
-      isOpen = true;
-    }
+// Trigger curtain on scroll down only
+document.addEventListener('wheel', e => {
+  if (!isOpen && e.deltaY > 0) openCurtain();
+}, { passive: true });
 
-    // Open curtain on scroll down only
-    document.addEventListener('wheel', e => {
-      if (e.deltaY > 0) openCurtain();
-    }, { passive: true });
+// Trigger curtain on touch swipe up
+let touchStart = 0;
+document.addEventListener('touchstart', e => { touchStart = e.touches[0].clientY; }, { passive: true });
+document.addEventListener('touchmove', e => {
+  if (!isOpen) {
+    const touchEnd = e.touches[0].clientY;
+    const diff = touchStart - touchEnd;
+    if (diff > 50) openCurtain(); // swipe up
+  }
+}, { passive: true });
+</script>
 
-    // Open curtain on touch swipe up
-    let touchStart = 0;
-    document.addEventListener('touchstart', e => { touchStart = e.touches[0].clientY; }, { passive: true });
-    document.addEventListener('touchmove', e => {
-      const touchEnd = e.touches[0].clientY;
-      const diff = touchStart - touchEnd;
-      if (diff > 50) openCurtain(); // swipe up
-    }, { passive: true });
   </script>
 </body>
 </html>
