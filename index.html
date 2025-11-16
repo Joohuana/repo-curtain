@@ -158,45 +158,44 @@
       overlayBottom.classList.remove('open');
       isOpen = false;
     }
+// Wheel scroll
+document.addEventListener('wheel', (e) => {
+  const now = Date.now();
+  if (now - lastScrollTime < SCROLL_COOLDOWN) return;
 
-    // Wheel scroll
-    document.addEventListener('wheel', (e) => {
-      const now = Date.now();
-      if (now - lastScrollTime < SCROLL_COOLDOWN) return;
+  // Get overlay-top position
+  const overlayTop = document.querySelector('.overlay-top');
+  const overlayRect = overlayTop.getBoundingClientRect();
+  
+  // Only close if overlay-top is fully visible (top at 0, height = 50vh)
+  const isOverlayFullyVisible = overlayRect.top === 0 && overlayRect.height > 0;
 
-      // Close curtain only if scrolling UP on the overlay
-      if (e.deltaY < 0 && cursorOnOverlay) {
-        closeCurtain();
-      } else if (e.deltaY > 0) {
-        openCurtain();
-      }
-      lastScrollTime = now;
-    }, { passive: true });
+  if (e.deltaY < 0 && isOpen && isOverlayFullyVisible) {
+    closeCurtain();
+  } else if (e.deltaY > 0 && !isOpen) {
+    openCurtain();
+  }
+  lastScrollTime = now;
+}, { passive: true });
 
-    // Touch detection
-    let touchStart = 0;
-    let touchStartX = 0;
+ document.addEventListener('touchmove', (e) => {
+  if (!touchStart) return;
+  const touchEnd = e.touches[0].clientY;
+  const diff = touchStart - touchEnd;
 
-    document.addEventListener('touchstart', (e) => {
-      touchStart = e.touches[0].clientY;
-      touchStartX = e.touches[0].clientX;
-    }, { passive: true });
+  if (Math.abs(diff) > 50) {
+    const overlayTop = document.querySelector('.overlay-top');
+    const overlayRect = overlayTop.getBoundingClientRect();
+    const isOverlayFullyVisible = overlayRect.top === 0 && overlayRect.height > 0;
 
-    document.addEventListener('touchmove', (e) => {
-      if (!touchStart) return;
-      const touchEnd = e.touches[0].clientY;
-      const diff = touchStart - touchEnd;
-
-      if (Math.abs(diff) > 50) {
-        // Only close curtain if scrollbar is at top
-        if (window.scrollY === 0 && diff < 0) {
-          closeCurtain();
-        } else if (diff > 0) {
-          openCurtain();
-        }
-        touchStart = 0;
-      }
-    }, { passive: true });
+    if (diff < 0 && isOpen && isOverlayFullyVisible) {
+      closeCurtain();
+    } else if (diff > 0 && !isOpen) {
+      openCurtain();
+    }
+    touchStart = 0;
+  }
+}, { passive: true });
   </script>
 </body>
 </html>
