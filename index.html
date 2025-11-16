@@ -65,8 +65,7 @@ height: calc(50vh + 2px);
 
   <div class="custom-cursor">Scroll to reveal</div>
 
-
-  <script>
+<script>
 const overlayTop = document.querySelector('.overlay-top');
 const overlayBottom = document.querySelector('.overlay-bottom');
 const customCursor = document.querySelector('.custom-cursor');
@@ -92,9 +91,6 @@ if (!isTouch) {
 // Lock scroll
 function preventScroll(e) { e.preventDefault(); }
 
-// Keep track of scroll position before unlock
-let savedScrollY = 0;
-
 // Initially block scroll completely
 document.addEventListener('wheel', preventScroll, { passive: false });
 document.addEventListener('touchmove', preventScroll, { passive: false });
@@ -108,28 +104,24 @@ function openCurtain() {
   overlayTop.classList.add('open');
   overlayBottom.classList.add('open');
 
+  // Fade out cursor slightly earlier (e.g., 300ms into the 800ms transition)
+  setTimeout(() => {
+    customCursor.style.transition = 'opacity 0.3s ease';
+    customCursor.style.opacity = '0';
+  }, 300);
+
   let transitionsFinished = 0;
   function onTransitionEnd() {
     transitionsFinished++;
     if (transitionsFinished === 2) {
-      // Save current scroll position (should be 0)
-      savedScrollY = window.scrollY;
-
       // Remove scroll locks
       document.removeEventListener('wheel', preventScroll);
       document.removeEventListener('touchmove', preventScroll);
-      document.body.style.overflow = ''; // enable native scrolling
+      document.body.style.overflow = ''; // enable scrolling
+      document.body.style.cursor = 'auto'; // restore system cursor
 
-      // Restore scroll position
-      window.scrollTo(0, savedScrollY);
-
-      // Hide custom cursor and restore normal system cursor
-      customCursor.style.transition = 'opacity 0.5s ease';
-      customCursor.style.opacity = '0';
-      setTimeout(() => {
-        customCursor.style.display = 'none';
-        document.body.style.cursor = 'auto';
-      }, 500);
+      // Fully hide the custom cursor
+      customCursor.style.display = 'none';
 
       overlayTop.removeEventListener('transitionend', onTransitionEnd);
       overlayBottom.removeEventListener('transitionend', onTransitionEnd);
