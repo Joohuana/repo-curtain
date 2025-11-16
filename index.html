@@ -5,16 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>elementewerk - Cargo</title>
   <style>
+
+
     body {
-      overflow-x: hidden;
+     
+          overflow-x: hidden;
     }
 
+  
+    /* Overlay styling */
     .overlay-top {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
-      height: calc(50vh + 2px);
+height: calc(50vh + 2px);
       background-color: #B9B9B9;
       z-index: 999;
       transform-origin: center;
@@ -27,8 +32,7 @@
       top: 50vh;
       left: 0;
       width: 100%;
-      height: calc(50vh + 2px);
-      background-color: #B9B9B9;
+height: calc(50vh + 2px);      background-color: #B9B9B9;
       z-index: 999;
       transform-origin: center;
       transition: clip-path 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -43,6 +47,10 @@
       clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
     }
 
+   
+   
+
+    /* Custom cursor */
     .custom-cursor {
       position: fixed;
       width: 80px;
@@ -74,6 +82,8 @@
     }
 
     @media (max-width: 768px) {
+     
+
       .custom-cursor {
         width: 70px;
         height: 70px;
@@ -85,14 +95,14 @@
 <body>
   <div class="overlay-top"></div>
   <div class="overlay-bottom"></div>
-  <div class="custom-cursor">Scroll to reveal</div>
-
+        <div class="custom-cursor">Scroll to reveal</div>
+     
   <script>
     const overlayTop = document.querySelector('.overlay-top');
     const overlayBottom = document.querySelector('.overlay-bottom');
-    const customCursor = document.querySelector('.custom-cursor');
-
-    let isOpen = false;
+        const customCursor = document.querySelector('.custom-cursor');
+    
+let isOpen = false;
     let lastScrollTime = 0;
     const SCROLL_COOLDOWN = 300;
 
@@ -110,8 +120,8 @@
 
     const isTouch = isTouchDevice();
     customCursor.textContent = isTouch ? 'swipe to start' : 'scroll to start';
-
-    // Custom cursor tracking
+    
+     // Custom cursor tracking
     document.addEventListener('mousemove', (e) => {
       if (!isTouch) {
         customCursor.style.left = (e.clientX - 40) + 'px';
@@ -131,6 +141,7 @@
       }
     });
 
+    // Hide cursor on touch devices
     if (isTouch) {
       customCursor.classList.add('hidden');
     }
@@ -149,41 +160,12 @@
       isOpen = false;
     }
 
-    // Check if hero-block is fully visible in parent viewport
-    function isHeroBlockFullyVisible() {
-      try {
-        // Get parent page's scroll position via window.parent
-        const parentScrollY = window.parent.scrollY || window.parent.document.documentElement.scrollTop || 0;
-        const viewportHeight = window.innerHeight;
-        
-        // Hero-block starts after the fixed iframe (100vh)
-        // So hero-block is fully visible when parent has scrolled past 100vh
-        // and hero-block content is now visible in viewport
-        const heroBlockStart = viewportHeight;
-        
-        // If parent page scrolled down enough that hero-block is entering
-        // But we want it FULLY in viewport, so check if we've scrolled to show it completely
-        // Assuming hero-block has some height (estimate ~300px for text content)
-        const heroBlockHeight = 300; // Adjust based on actual hero-block size
-        
-        return parentScrollY >= heroBlockStart - viewportHeight && 
-               parentScrollY < heroBlockStart + heroBlockHeight;
-      } catch (e) {
-        // If cross-origin, just allow closing always
-        return true;
-      }
-    }
-
-    // Wheel scroll - only close when scrolling up AND hero-block is fully visible
+    // Wheel scroll
     document.addEventListener('wheel', (e) => {
       const now = Date.now();
       if (now - lastScrollTime < SCROLL_COOLDOWN) return;
 
-      const isScrollingUp = e.deltaY < 0;
-      const isAtTopOfParent = window.parent.scrollY === 0;
-      const heroFullyVisible = isHeroBlockFullyVisible();
-
-      if (isAtTopOfParent && isScrollingUp && heroFullyVisible) {
+      if (window.scrollY === 0 && e.deltaY < 0) {
         closeCurtain();
       } else if (e.deltaY > 0) {
         openCurtain();
@@ -204,11 +186,7 @@
       const diff = touchStart - touchEnd;
 
       if (Math.abs(diff) > 50) {
-        const isSwipingDown = diff < 0;
-        const isAtTopOfParent = window.parent.scrollY === 0;
-        const heroFullyVisible = isHeroBlockFullyVisible();
-
-        if (isAtTopOfParent && isSwipingDown && heroFullyVisible) {
+        if (window.scrollY === 0 && diff < 0) {
           closeCurtain();
         } else if (diff > 0) {
           openCurtain();
