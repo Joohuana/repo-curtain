@@ -6,6 +6,18 @@
   <title>elementewerk - Cargo</title>
   <style>
    
+.curtain-instruction {
+  opacity: 1;
+  filter: blur(0);
+  transition: opacity 0.4s ease-out, filter 0.6s ease-out;
+}
+
+.curtain-instruction.hidden {
+  opacity: 0;
+  filter: blur(15px);
+}
+
+
 
     /* Overlay styling */
     .overlay-top,
@@ -34,7 +46,7 @@ height: calc(50vh + 2px);
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 10000;
-  font-family: "Manrope", sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 1.1rem;
   font-weight: 500;
   color: #ECECE6;
