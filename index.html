@@ -9,7 +9,6 @@
       overflow-x: hidden;
     }
 
-    /* Overlay styling */
     .overlay-top {
       position: fixed;
       top: 0;
@@ -44,7 +43,6 @@
       clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
     }
 
-    /* Custom cursor */
     .custom-cursor {
       position: fixed;
       width: 80px;
@@ -97,7 +95,6 @@
     let isOpen = false;
     let lastScrollTime = 0;
     const SCROLL_COOLDOWN = 300;
-    let isOverlayTopAtViewportTop = false;
 
     // Detect device type
     const isTouchDevice = () => {
@@ -114,39 +111,9 @@
     const isTouch = isTouchDevice();
     customCursor.textContent = isTouch ? 'swipe to start' : 'scroll to start';
 
-    // Monitor overlay-top position
-    function checkOverlayAlignment() {
-      const rect = overlayTop.getBoundingClientRect();
-      // Check if top edge of overlay-top is aligned with viewport top (within 2px tolerance)
-      isOverlayTopAtViewportTop = rect.top <= 2 && rect.top >= -2;
-      
-      // Show cursor only when overlay-top is at viewport top
-      if (isOverlayTopAtViewportTop && !isTouch) {
-        customCursor.classList.remove('hidden');
-      } else if (!isTouch) {
-        customCursor.classList.add('hidden');
-      }
-    }
-
-    // Use Intersection Observer for better performance
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          checkOverlayAlignment();
-        });
-      },
-      { threshold: [0, 1] }
-    );
-
-    observer.observe(overlayTop);
-
-    // Also check on scroll and resize
-    window.addEventListener('scroll', checkOverlayAlignment);
-    window.addEventListener('resize', checkOverlayAlignment);
-
-    // Custom cursor tracking (only when overlay is at viewport top)
+    // Custom cursor tracking
     document.addEventListener('mousemove', (e) => {
-      if (!isTouch && isOverlayTopAtViewportTop) {
+      if (!isTouch) {
         customCursor.style.left = (e.clientX - 40) + 'px';
         customCursor.style.top = (e.clientY - 40) + 'px';
       }
@@ -154,7 +121,7 @@
 
     document.addEventListener('mouseenter', () => {
       if (!isTouch) {
-        checkOverlayAlignment();
+        customCursor.classList.remove('hidden');
       }
     });
 
@@ -164,7 +131,6 @@
       }
     });
 
-    // Hide cursor on touch devices initially
     if (isTouch) {
       customCursor.classList.add('hidden');
     }
@@ -183,12 +149,41 @@
       isOpen = false;
     }
 
-    // Wheel scroll
+    // Check if hero-block is fully visible in parent viewport
+    function isHeroBlockFullyVisible() {
+      try {
+        // Get parent page's scroll position via window.parent
+        const parentScrollY = window.parent.scrollY || window.parent.document.documentElement.scrollTop || 0;
+        const viewportHeight = window.innerHeight;
+        
+        // Hero-block starts after the fixed iframe (100vh)
+        // So hero-block is fully visible when parent has scrolled past 100vh
+        // and hero-block content is now visible in viewport
+        const heroBlockStart = viewportHeight;
+        
+        // If parent page scrolled down enough that hero-block is entering
+        // But we want it FULLY in viewport, so check if we've scrolled to show it completely
+        // Assuming hero-block has some height (estimate ~300px for text content)
+        const heroBlockHeight = 300; // Adjust based on actual hero-block size
+        
+        return parentScrollY >= heroBlockStart - viewportHeight && 
+               parentScrollY < heroBlockStart + heroBlockHeight;
+      } catch (e) {
+        // If cross-origin, just allow closing always
+        return true;
+      }
+    }
+
+    // Wheel scroll - only close when scrolling up AND hero-block is fully visible
     document.addEventListener('wheel', (e) => {
       const now = Date.now();
       if (now - lastScrollTime < SCROLL_COOLDOWN) return;
 
-      if (window.scrollY === 0 && e.deltaY < 0) {
+      const isScrollingUp = e.deltaY < 0;
+      const isAtTopOfParent = window.parent.scrollY === 0;
+      const heroFullyVisible = isHeroBlockFullyVisible();
+
+      if (isAtTopOfParent && isScrollingUp && heroFullyVisible) {
         closeCurtain();
       } else if (e.deltaY > 0) {
         openCurtain();
@@ -209,7 +204,11 @@
       const diff = touchStart - touchEnd;
 
       if (Math.abs(diff) > 50) {
-        if (window.scrollY === 0 && diff < 0) {
+        const isSwipingDown = diff < 0;
+        const isAtTopOfParent = window.parent.scrollY === 0;
+        const heroFullyVisible = isHeroBlockFullyVisible();
+
+        if (isAtTopOfParent && isSwipingDown && heroFullyVisible) {
           closeCurtain();
         } else if (diff > 0) {
           openCurtain();
@@ -217,9 +216,6 @@
         touchStart = 0;
       }
     }, { passive: true });
-
-    // Initial check
-    checkOverlayAlignment();
   </script>
 </body>
 </html>
