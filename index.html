@@ -162,27 +162,21 @@ height: calc(50vh + 2px);
       customCursor.classList.add('hidden');
     }
 
-    function openCurtain() {
-if (isOpen) {
-  document.body.style.overflow = 'hidden';
-} else {
-  document.body.style.overflow = 'auto';
+  function openCurtain() {
+  if (isOpen) return;
+  overlayTop.classList.add('open');
+  overlayBottom.classList.add('open');
+  isOpen = true;
+  document.body.style.overflow = 'hidden'; // Block scroll WHILE opening
 }
-      overlayTop.classList.add('open');
-      overlayBottom.classList.add('open');
-      isOpen = true;
-    }
 
-    function closeCurtain() {
-if (isOpen) {
-  document.body.style.overflow = 'hidden';
-} else {
-  document.body.style.overflow = 'auto';
+function closeCurtain() {
+  if (!isOpen) return;
+  overlayTop.classList.remove('open');
+  overlayBottom.classList.remove('open');
+  isOpen = false;
+  document.body.style.overflow = 'auto'; // Allow scroll AFTER closing
 }
-      overlayTop.classList.remove('open');
-      overlayBottom.classList.remove('open');
-      isOpen = false;
-    }
 
     // Wheel scroll
    document.addEventListener('wheel', (e) => {
