@@ -164,8 +164,8 @@
       const now = Date.now();
       if (now - lastScrollTime < SCROLL_COOLDOWN) return;
 
-      // Only close curtain if scrollbar is at top AND cursor is on overlay
-      if (window.scrollY === 0 && e.deltaY < 0 && cursorOnOverlay) {
+      // Close curtain only if scrolling UP on the overlay
+      if (e.deltaY < 0 && cursorOnOverlay) {
         closeCurtain();
       } else if (e.deltaY > 0) {
         openCurtain();
