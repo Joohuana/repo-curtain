@@ -66,7 +66,7 @@ height: calc(50vh + 2px);
   <div class="custom-cursor">Scroll to reveal</div>
 
 
-    <script>
+  <script>
 const overlayTop = document.querySelector('.overlay-top');
 const overlayBottom = document.querySelector('.overlay-bottom');
 const customCursor = document.querySelector('.custom-cursor');
@@ -89,17 +89,17 @@ if (!isTouch) {
   customCursor.classList.add('hidden');
 }
 
-// Prevent scrolling while curtain is opening
-function preventScroll(e) {
-  e.preventDefault();
-}
+// Lock scroll
+function preventScroll(e) { e.preventDefault(); }
 
-// Initially block scroll
+// Keep track of scroll position before unlock
+let savedScrollY = 0;
+
+// Initially block scroll completely
 document.addEventListener('wheel', preventScroll, { passive: false });
 document.addEventListener('touchmove', preventScroll, { passive: false });
-
-// Disable scrolling via CSS as backup
 document.body.style.overflow = 'hidden';
+document.body.style.cursor = 'none'; // hide system cursor initially
 
 function openCurtain() {
   if (isOpen) return;
@@ -108,15 +108,28 @@ function openCurtain() {
   overlayTop.classList.add('open');
   overlayBottom.classList.add('open');
 
-  // Wait until both transitions finish
   let transitionsFinished = 0;
   function onTransitionEnd() {
     transitionsFinished++;
     if (transitionsFinished === 2) {
-      // Remove scroll lock
+      // Save current scroll position (should be 0)
+      savedScrollY = window.scrollY;
+
+      // Remove scroll locks
       document.removeEventListener('wheel', preventScroll);
       document.removeEventListener('touchmove', preventScroll);
-      document.body.style.overflow = ''; // re-enable normal scrolling
+      document.body.style.overflow = ''; // enable native scrolling
+
+      // Restore scroll position
+      window.scrollTo(0, savedScrollY);
+
+      // Hide custom cursor and restore normal system cursor
+      customCursor.style.transition = 'opacity 0.5s ease';
+      customCursor.style.opacity = '0';
+      setTimeout(() => {
+        customCursor.style.display = 'none';
+        document.body.style.cursor = 'auto';
+      }, 500);
 
       overlayTop.removeEventListener('transitionend', onTransitionEnd);
       overlayBottom.removeEventListener('transitionend', onTransitionEnd);
@@ -142,6 +155,7 @@ document.addEventListener('touchmove', e => {
   }
 }, { passive: true });
 </script>
+
 
 
 </body>
