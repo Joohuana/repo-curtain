@@ -28,78 +28,56 @@ height: calc(50vh + 2px);
     .overlay-top.open { clip-path: polygon(0 0, 100% 0, 100% 0, 0 0); }
     .overlay-bottom.open { clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%); }
 
+    .curtain-instruction {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10000;
+  font-family: "Manrope", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #ECECE6;
+  letter-spacing: 0.1em;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.4s ease;
+  text-transform: uppercase;
+}
+
+.curtain-instruction.hidden {
+  opacity: 0;
+}
+
    
-    /* Custom cursor */
-    .custom-cursor {
-      position: fixed;
-      width: 120px;
-      height: 120px;
-border: 1.5px solid rgba(236, 236, 230, 0.8);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 10000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: "Inconsolata", monospace; 
-      font-size: 0.95rem;
-      font-weight: 600;
-      text-align: center;
-      color: #ECECE6;
-      padding: 8px;
-      box-sizing: border-box;
-      line-height: 1.2;
-      transition: opacity 0.3s ease;
-       letter-spacing: 0.1em;
-         }
-
-    .custom-cursor.hidden { opacity: 0; pointer-events: none; }
-    body { cursor: none; }
-
-    @media (max-width: 768px) {
-      .custom-cursor { width: 70px; height: 70px; font-size: 0.6rem; }
-    }
+   
   </style>
 </head>
 <body>
   <div class="overlay-top"></div>
   <div class="overlay-bottom"></div>
 
+ <div class="curtain-instruction">scroll to reveal</div>
+
+
  
-
-  <div class="custom-cursor">Scroll to reveal</div>
-
 <script>
 const overlayTop = document.querySelector('.overlay-top');
 const overlayBottom = document.querySelector('.overlay-bottom');
-const customCursor = document.querySelector('.custom-cursor');
+const instruction = document.querySelector('.curtain-instruction');
 
 let isOpen = false;
 
 // Detect device type
 const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-customCursor.textContent = isTouch ? 'swipe to reveal' : 'scroll to reveal';
+instruction.textContent = isTouch ? 'swipe to reveal' : 'scroll to reveal';
 
-// Custom cursor tracking
-if (!isTouch) {
-  document.addEventListener('mousemove', e => {
-    customCursor.style.left = (e.clientX - 40) + 'px';
-    customCursor.style.top = (e.clientY - 40) + 'px';
-  });
-  document.addEventListener('mouseenter', () => customCursor.classList.remove('hidden'));
-  document.addEventListener('mouseleave', () => customCursor.classList.add('hidden'));
-} else {
-  customCursor.classList.add('hidden');
-}
-
-// Lock scroll
+// Block scroll initially
 function preventScroll(e) { e.preventDefault(); }
 
-// Initially block scroll completely
 document.addEventListener('wheel', preventScroll, { passive: false });
 document.addEventListener('touchmove', preventScroll, { passive: false });
 document.body.style.overflow = 'hidden';
-document.body.style.cursor = 'none'; // hide system cursor initially
 
 function openCurtain() {
   if (isOpen) return;
@@ -108,51 +86,47 @@ function openCurtain() {
   overlayTop.classList.add('open');
   overlayBottom.classList.add('open');
 
-  // Fade out cursor slightly earlier (e.g., 300ms into the 800ms transition)
+  // Fade out instruction text
   setTimeout(() => {
-    customCursor.style.transition = 'opacity 0.3s ease';
-    customCursor.style.opacity = '0';
+    instruction.classList.add('hidden');
   }, 300);
 
   let transitionsFinished = 0;
   function onTransitionEnd() {
     transitionsFinished++;
     if (transitionsFinished === 2) {
-      // Remove scroll locks
+
+      // Enable scrolling again
       document.removeEventListener('wheel', preventScroll);
       document.removeEventListener('touchmove', preventScroll);
-      document.body.style.overflow = ''; // enable scrolling
-      document.body.style.cursor = 'auto'; // restore system cursor
+      document.body.style.overflow = '';
 
-      // Fully hide the custom cursor
-      customCursor.style.display = 'none';
+      // Remove instruction text fully
+      instruction.style.display = 'none';
 
       overlayTop.removeEventListener('transitionend', onTransitionEnd);
       overlayBottom.removeEventListener('transitionend', onTransitionEnd);
     }
   }
+
   overlayTop.addEventListener('transitionend', onTransitionEnd);
   overlayBottom.addEventListener('transitionend', onTransitionEnd);
 }
 
-// Trigger curtain on scroll down only
+// Desktop scroll
 document.addEventListener('wheel', e => {
   if (!isOpen && e.deltaY > 0) openCurtain();
 }, { passive: true });
 
-// Trigger curtain on touch swipe up
+// Touch swipe up
 let touchStart = 0;
 document.addEventListener('touchstart', e => { touchStart = e.touches[0].clientY; }, { passive: true });
 document.addEventListener('touchmove', e => {
   if (!isOpen) {
-    const touchEnd = e.touches[0].clientY;
-    const diff = touchStart - touchEnd;
-    if (diff > 50) openCurtain(); // swipe up
+    const diff = touchStart - e.touches[0].clientY;
+    if (diff > 50) openCurtain();
   }
 }, { passive: true });
 </script>
-
-
-
 </body>
 </html>
