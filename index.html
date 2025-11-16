@@ -184,13 +184,13 @@ function closeCurtain() {
    document.addEventListener('wheel', (e) => {
   const now = Date.now();
   if (now - lastScrollTime < SCROLL_COOLDOWN) {
-    e.preventDefault(); // Block scroll during cooldown
+
     return;
   }
 
   if (window.scrollY === 0 && e.deltaY < 0) {
     closeCurtain();
-    e.preventDefault();
+
   } else if (e.deltaY > 0) {
     openCurtain();
    
