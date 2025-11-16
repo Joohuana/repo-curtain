@@ -19,7 +19,7 @@
       top: 0;
       left: 0;
       width: 100%;
-height: calc(50vh + 2px);
+      height: calc(50vh + 2px);
       background-color: #B9B9B9;
       z-index: 999;
       transform-origin: center;
@@ -32,7 +32,8 @@ height: calc(50vh + 2px);
       top: 50vh;
       left: 0;
       width: 100%;
-height: calc(50vh + 2px);      background-color: #B9B9B9;
+      height: calc(50vh + 2px);      
+      background-color: #B9B9B9;
       z-index: 999;
       transform-origin: center;
       transition: clip-path 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -47,8 +48,11 @@ height: calc(50vh + 2px);      background-color: #B9B9B9;
       clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0 100%);
     }
 
-   
-   
+    /* Spacer section */
+    .spacer-section {
+      height: 100vh;
+      background-color: transparent;
+    }
 
     /* Custom cursor */
     .custom-cursor {
@@ -95,14 +99,16 @@ height: calc(50vh + 2px);      background-color: #B9B9B9;
 <body>
   <div class="overlay-top"></div>
   <div class="overlay-bottom"></div>
-        <div class="custom-cursor">Scroll to reveal</div>
+  <div class="spacer-section"></div>
+  <div class="custom-cursor">Scroll to reveal</div>
      
   <script>
     const overlayTop = document.querySelector('.overlay-top');
     const overlayBottom = document.querySelector('.overlay-bottom');
-        const customCursor = document.querySelector('.custom-cursor');
+    const spacerSection = document.querySelector('.spacer-section');
+    const customCursor = document.querySelector('.custom-cursor');
     
-let isOpen = false;
+    let isOpen = false;
     let lastScrollTime = 0;
     const SCROLL_COOLDOWN = 300;
 
@@ -121,7 +127,7 @@ let isOpen = false;
     const isTouch = isTouchDevice();
     customCursor.textContent = isTouch ? 'swipe to start' : 'scroll to start';
     
-     // Custom cursor tracking
+    // Custom cursor tracking
     document.addEventListener('mousemove', (e) => {
       if (!isTouch) {
         customCursor.style.left = (e.clientX - 40) + 'px';
@@ -160,15 +166,24 @@ let isOpen = false;
       isOpen = false;
     }
 
+    // Check if spacer section is 99% out of viewport
+    function isSpacerOutOfViewport() {
+      const rect = spacerSection.getBoundingClientRect();
+      const spacerHeight = rect.height;
+      const outOfViewportAmount = Math.max(0, -rect.top);
+      const percentageOut = (outOfViewportAmount / spacerHeight) * 100;
+      return percentageOut >= 99;
+    }
+
     // Wheel scroll
     document.addEventListener('wheel', (e) => {
       const now = Date.now();
       if (now - lastScrollTime < SCROLL_COOLDOWN) return;
 
-      if (window.scrollY === 0 && e.deltaY < 0) {
-        closeCurtain();
-      } else if (e.deltaY > 0) {
+      if (e.deltaY > 0) {
         openCurtain();
+      } else if (e.deltaY < 0 && isSpacerOutOfViewport()) {
+        closeCurtain();
       }
       lastScrollTime = now;
     }, { passive: true });
@@ -186,10 +201,10 @@ let isOpen = false;
       const diff = touchStart - touchEnd;
 
       if (Math.abs(diff) > 50) {
-        if (window.scrollY === 0 && diff < 0) {
-          closeCurtain();
-        } else if (diff > 0) {
+        if (diff > 0) {
           openCurtain();
+        } else if (diff < 0 && isSpacerOutOfViewport()) {
+          closeCurtain();
         }
         touchStart = 0;
       }
