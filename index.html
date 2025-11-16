@@ -163,34 +163,33 @@ document.addEventListener('wheel', (e) => {
   const now = Date.now();
   if (now - lastScrollTime < SCROLL_COOLDOWN) return;
 
-  // Get overlay-top position
-  const overlayTop = document.querySelector('.overlay-top');
-  const overlayRect = overlayTop.getBoundingClientRect();
-  
-  // Only close if overlay-top is fully visible (top at 0, height = 50vh)
-  const isOverlayFullyVisible = overlayRect.top === 0 && overlayRect.height > 0;
+  // Check if element with id="C0162098515" is at viewport top
+  const targetElement = document.getElementById('C0162098515');
+  const targetRect = targetElement.getBoundingClientRect();
+  const isAtViewportTop = targetRect.top === 0;
 
-  if (e.deltaY < 0 && isOpen && isOverlayFullyVisible) {
+  if (e.deltaY < 0 && isOpen && isAtViewportTop) {
     closeCurtain();
-  } else if (e.deltaY > 0 && !isOpen) {
+  } else if (e.deltaY > 0 && !isOpen && isAtViewportTop) {
     openCurtain();
   }
   lastScrollTime = now;
 }, { passive: true });
 
- document.addEventListener('touchmove', (e) => {
+
+document.addEventListener('touchmove', (e) => {
   if (!touchStart) return;
   const touchEnd = e.touches[0].clientY;
   const diff = touchStart - touchEnd;
 
   if (Math.abs(diff) > 50) {
-    const overlayTop = document.querySelector('.overlay-top');
-    const overlayRect = overlayTop.getBoundingClientRect();
-    const isOverlayFullyVisible = overlayRect.top === 0 && overlayRect.height > 0;
+    const targetElement = document.getElementById('C0162098515');
+    const targetRect = targetElement.getBoundingClientRect();
+    const isAtViewportTop = targetRect.top === 0;
 
-    if (diff < 0 && isOpen && isOverlayFullyVisible) {
+    if (diff < 0 && isOpen && isAtViewportTop) {
       closeCurtain();
-    } else if (diff > 0 && !isOpen) {
+    } else if (diff > 0 && !isOpen && isAtViewportTop) {
       openCurtain();
     }
     touchStart = 0;
